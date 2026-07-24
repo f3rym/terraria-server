@@ -1,0 +1,12 @@
+services:
+  tmodloader:
+    build: .
+    container_name: tmodloader
+    restart: unless-stopped
+
+    ports:
+      - "7777:7777"
+
+    volumes:
+      - ./Mods:/root/.local/share/Terraria/tModLoader/Mods
+      - ./Worlds:/root/.local/share/Terraria/tModLoader/Worlds
