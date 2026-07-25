@@ -1,0 +1,93 @@
+name: Deploy mods
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Postavka/**'
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    name: Check & promote mods
+    runs-on: ubuntu-latest
+    outputs:
+      promoted: ${{ steps.promote.outputs.promoted }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Promote fresh mods
+        id: promote
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          git lfs install --local
+          promoted=0
+
+          oid() {
+            if head -c 100 "$1" | grep -q '^version https://git-lfs'; then
+              sed -n 's/^oid sha256://p' "$1" | head -1
+            else
+              sha256sum "$1" | cut -d' ' -f1
+            fi
+          }
+
+          for f in Postavka/*.tmod; do
+            name=$(basename "$f")
+
+            if [[ "$name" == ._* ]]; then
+              git rm -fq "$f"
+              continue
+            fi
+
+            new_oid=$(oid "$f")
+            old_oid=""
+            [[ -f "Mods/$name" ]] && old_oid=$(oid "Mods/$name")
+
+            if [[ -n "$new_oid" && "$new_oid" == "$old_oid" ]]; then
+              echo "SKIP: $name — уже стоит такая же версия, не свежак"
+              git rm -fq "$f"
+            else
+              echo "PROMOTE: $name — новый или обновлённый мод"
+              git mv -f "$f" "Mods/$name"
+              git add --renormalize "Mods/$name"
+              modname="${name%.tmod}"
+              jq --arg m "$modname" 'if index($m) then . else . + [$m] end' \
+                Mods/enabled.json > /tmp/enabled.json
+              mv /tmp/enabled.json Mods/enabled.json
+              git add Mods/enabled.json
+              promoted=1
+            fi
+          done
+
+          if ! git diff --cached --quiet; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -m "ci: promote mods from Postavka"
+            git push
+          fi
+
+          echo "promoted=$promoted" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Restart server (manual approval)
+    needs: promote
+    if: needs.promote.outputs.promoted == '1'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Pull & restart via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+            git pull --ff-only
+            git lfs pull
+            docker compose down
+            docker compose up -d
