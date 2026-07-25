@@ -26,7 +26,7 @@ cd "$INSTALL"
 
 chmod +x start-tModLoaderServer.sh || true
 
-echo "Starting server (auto world)..."
+echo "Starting server (auto world)... ok"
 
 exec ./start-tModLoaderServer.sh \
   -nographics \
