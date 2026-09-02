@@ -11,13 +11,11 @@ mkdir -p "$WORLD_DIR"
 
 echo "Checking tModLoader..."
 
-# если не распакован — качаем
 if [ ! -f "$INSTALL/start-tModLoaderServer.sh" ]; then
   echo "Downloading tModLoader..."
 
   curl -L -o "$ZIP" \
-    https://github.com/tModLoader/tModLoader/releases/download/v2026.07.3.0/tModLoader.zip
-
+    https://github.com/tModLoader/tModLoader/releases/download/v2026.06.3.0/tModLoader.zip
   unzip -o "$ZIP" -d "$INSTALL"
   rm "$ZIP"
 fi
