@@ -8,6 +8,9 @@ WORKDIR /server
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Моды запекаются в образ (Mods/*.tmod + enabled.json)
+COPY Mods/ /root/.local/share/Terraria/tModLoader/Mods/
+
 EXPOSE 7777
 
 ENTRYPOINT ["/entrypoint.sh"]

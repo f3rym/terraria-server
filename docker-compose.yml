@@ -1,6 +1,6 @@
 services:
   tmodloader:
-    build: .
+    image: ghcr.io/f3rym/terraria-server:latest
     container_name: tmodloader
     restart: unless-stopped
 
@@ -8,5 +8,4 @@ services:
       - "7777:7777"
 
     volumes:
-      - ./Mods:/root/.local/share/Terraria/tModLoader/Mods
       - ./Worlds:/root/.local/share/Terraria/tModLoader/Worlds

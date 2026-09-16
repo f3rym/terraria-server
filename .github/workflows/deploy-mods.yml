@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   promote:
@@ -70,24 +71,8 @@ jobs:
 
           echo "promoted=$promoted" >> "$GITHUB_OUTPUT"
 
-  deploy:
-    name: Restart server (manual approval)
+  build:
+    name: Build image with mods
     needs: promote
     if: needs.promote.outputs.promoted == '1'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Pull & restart via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            set -e
-            cd "${{ secrets.DEPLOY_PATH }}"
-            git pull --ff-only
-            git lfs pull
-            docker compose down
-            docker compose up -d
+    uses: ./.github/workflows/build-image.yml

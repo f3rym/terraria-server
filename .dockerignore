@@ -1,0 +1,8 @@
+.git
+.github
+Worlds
+Postavka
+README.md
+docker-compose.yml
+._*
+.DS_Store
