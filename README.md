@@ -13,7 +13,7 @@ tModLoader-сервер в Docker + деплой модов через GitHub Ac
 
 ## Изменения инфры
 
-Правки `Dockerfile`, `docker-compose.yml`, `entrypoint.sh` идут через пайплайн
+Правки `Dockerfile`, `docker-compose.yml` идут через пайплайн
 **Deploy infra** — тоже с manual approval. Он дополнительно пересобирает образ
 (`docker compose build --pull`). Можно запустить руками через *Run workflow*.
 
