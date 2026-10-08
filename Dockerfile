@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0
 
-ARG TML_VERSION=v2026.07.3.0
+ARG TML_VERSION=v2026.08.3.0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bash curl unzip ca-certificates \
